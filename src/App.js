@@ -9,7 +9,7 @@ import { entries } from "./graphql/queries";
 import { createEntry } from "./graphql/mutations";
 import flowright from "lodash.flowright";
 
-function App({ entries, client }) {
+function App({ entries, client, createEntry }) {
   return (
     <div className="App">
       <header className="App-header">
@@ -17,6 +17,8 @@ function App({ entries, client }) {
         {entries.items.map(item => {
           return <div>{item.difference}</div>;
         })}
+
+        <div onClick={() => createEntry()}>Test</div>
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
@@ -25,32 +27,40 @@ function App({ entries, client }) {
   );
 }
 const Test = withApollo(
-  graphql(
-    entries,
-    {
+  flowright(
+    graphql(entries, {
       options: {
         fetchPolicy: "cache-first"
       },
       props: ({ data: { listEntries = { items: [] } } }) => ({
         entries: listEntries
       })
-    }
-    // graphql(createEntry, {
-    //   props: props => ({
-    //     createEntry: event => {
-    //       return props.mutate({
-    //         variables: { id: event.id },
-    //         optimisticResponse: () => ({
-    //           createEntry: {
-    //             ...event,
-    //             __typename: "Event",
-    //             comments: { __typename: "CommentConnection", items: [] }
-    //           }
-    //         })
-    //       });
-    //     }
-    //   })
-    // })
+    }),
+    graphql(createEntry, {
+      options: {
+        update: (proxy, { data: { createEntry } }) => {
+          //proxy.writeQuery({ query, data });
+        }
+      },
+      props: props => ({
+        createEntry: event => {
+          const today = new Date();
+          return props.mutate({
+            variables: {
+              difference: 10,
+              publishedAt: today.toISOString()
+            },
+            optimisticResponse: () => ({
+              createEntry: {
+                ...event,
+                __typename: "Entry",
+                comments: { __typename: "EntryConnection", items: [] }
+              }
+            })
+          });
+        }
+      })
+    })
   )(App)
 );
 
