@@ -1,6 +1,4 @@
-/* eslint-disable */
-// this is an auto generated file. This will be overwritten
-
+import gql from "graphql-tag";
 export const singleEntry = `query SingleEntry($id: ID!) {
   singleEntry(id: $id) {
     id
@@ -9,14 +7,18 @@ export const singleEntry = `query SingleEntry($id: ID!) {
   }
 }
 `;
-export const entries = `query Entries($limit: Int) {
-  entries(limit: $limit) {
-    id
-    difference
-    publishedAt
+
+export const entries = gql(`
+query {
+  listEntries(limit: 1000) {
+    items {
+      id
+      difference
+      publishedAt
+    }
   }
-}
-`;
+}`);
+
 export const getEntry = `query GetEntry($id: ID!) {
   getEntry(id: $id) {
     id
