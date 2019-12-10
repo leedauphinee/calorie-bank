@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import logo from "./logo.svg";
 import "./App.css";
 import awsmobile from "./aws-exports";
@@ -8,20 +8,53 @@ import { graphql, compose, withApollo, ApolloProvider } from "react-apollo";
 import { entries } from "./graphql/queries";
 import { createEntry } from "./graphql/mutations";
 import flowright from "lodash.flowright";
+import { Input, Button, Statistic, Loader, Dimmer } from "semantic-ui-react";
 
 function App({ entries, client, createEntry }) {
+  const [difference, setDifference] = useState();
+  const [display, setDisplay] = useState(true);
+
+  const secondsInADay = 86400;
+  const BmrCalories = 2613;
+  const calorieGainPerSecond = BmrCalories / secondsInADay;
+
+  const test = () => {
+    const number = entries.items.reduce(
+      (accumulator, currentValue) => accumulator + currentValue.difference,
+      0
+    );
+    const date = new Date();
+    const dayOfWeek = date.getDay();
+    const secondsInToday =
+      date.getSeconds() + 60 * (date.getMinutes() + 60 * date.getHours());
+    const totalCurrentSecondsThisWeek =
+      secondsInToday + (dayOfWeek - 1) * secondsInADay;
+    const caloriesThisWeek = totalCurrentSecondsThisWeek * calorieGainPerSecond;
+    console.log(caloriesThisWeek, number);
+    setDisplay(caloriesThisWeek - number);
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      test();
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [entries]);
+
   return (
     <div className="App">
       <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        {entries.items.map(item => {
-          return <div>{item.difference}</div>;
-        })}
+        <Statistic label="Weekly Caloric +/-" value={display} />
 
-        <div onClick={() => createEntry()}>Test</div>
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
+        <div>Test</div>
+        <Input
+          focus
+          placeholder="Search..."
+          onChange={val => {
+            setDifference(val.target.value);
+          }}
+        />
+        <Button onClick={() => createEntry({ difference })}>Click Here</Button>
       </header>
     </div>
   );
@@ -43,16 +76,16 @@ const Test = withApollo(
         }
       },
       props: props => ({
-        createEntry: event => {
+        createEntry: entry => {
           const today = new Date();
           return props.mutate({
             variables: {
-              difference: 10,
+              difference: entry.difference,
               publishedAt: today.toISOString()
             },
             optimisticResponse: () => ({
               createEntry: {
-                ...event,
+                ...entry,
                 __typename: "Entry",
                 comments: { __typename: "EntryConnection", items: [] }
               }
