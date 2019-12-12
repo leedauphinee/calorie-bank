@@ -8,72 +8,122 @@ import { graphql, compose, withApollo, ApolloProvider } from "react-apollo";
 import { entries } from "./graphql/queries";
 import { createEntry } from "./graphql/mutations";
 import flowright from "lodash.flowright";
-import { Input, Button, Statistic, Loader, Dimmer } from "semantic-ui-react";
+import {
+  Input,
+  Button,
+  Statistic,
+  Header,
+  Progress,
+  Dimmer,
+  Loader
+} from "semantic-ui-react";
 
-function App({ entries, client, createEntry }) {
+function App({ data, client, createEntry }) {
   const [difference, setDifference] = useState();
   const [display, setDisplay] = useState(true);
+  const [weeklyGoalProgress, setWeeklyGoalProgress] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const secondsInADay = 86400;
   const BmrCalories = 2613;
+  const weeklyDeficitGoal = 3500;
   const calorieGainPerSecond = BmrCalories / secondsInADay;
 
-  const test = () => {
-    const number = entries.items.reduce(
+  // Initial start time
+  const dateWhenAppOpened = new Date();
+  const dayOfWeek = dateWhenAppOpened.getDay();
+
+  const weekProgressLine = (dayOfWeek / 7) * 100;
+
+  const getUpdatedCaloricDifference = () => {
+    const date = new Date();
+    const dayOfWeek = date.getDay();
+    const number = data.items.reduce(
       (accumulator, currentValue) => accumulator + currentValue.difference,
       0
     );
-    const date = new Date();
-    const dayOfWeek = date.getDay();
+
     const secondsInToday =
       date.getSeconds() + 60 * (date.getMinutes() + 60 * date.getHours());
     const totalCurrentSecondsThisWeek =
       secondsInToday + (dayOfWeek - 1) * secondsInADay;
     const caloriesThisWeek = totalCurrentSecondsThisWeek * calorieGainPerSecond;
-    console.log(caloriesThisWeek, number);
-    setDisplay(caloriesThisWeek - number);
+    const display = (
+      Math.round((caloriesThisWeek - number) * 100) / 100
+    ).toFixed(2);
+
+    setDisplay(display);
+
+    setWeeklyGoalProgress((display / weeklyDeficitGoal) * 100);
   };
 
   useEffect(() => {
     const interval = setInterval(() => {
-      test();
+      getUpdatedCaloricDifference();
     }, 1000);
     return () => clearInterval(interval);
-  }, [entries]);
+  }, [data]);
+
+  const handleSync = async () => {
+    setLoading(true);
+
+    const test = await client.query({
+      query: entries,
+      fetchPolicy: "network-only"
+    });
+
+    setLoading(false);
+  };
+
+  const pStyle = {
+    left: `${weekProgressLine}%`
+  };
 
   return (
     <div className="App">
-      <header className="App-header">
-        <Statistic label="Weekly Caloric +/-" value={display} />
-
-        <div>Test</div>
+      <Header className="App-header" textAlign="center">
+        <Statistic label="Weekly Caloric Deficit" as={"h2"} value={display} />
+      </Header>
+      <div class="icon center aligned header">
         <Input
           focus
-          placeholder="Search..."
+          placeholder="Add Calories..."
           onChange={val => {
             setDifference(val.target.value);
           }}
         />
-        <Button onClick={() => createEntry({ difference })}>Click Here</Button>
-      </header>
+        <Button
+          onClick={() => {
+            createEntry({ difference });
+
+            // I know I don't like this either
+            setTimeout(() => handleSync(), 1000);
+          }}
+        >
+          Submit
+        </Button>
+      </div>
+      <h2>{`Weekly Goal : ${weeklyDeficitGoal} cals`}</h2>
+      <Progress percent={weeklyGoalProgress} indicating>
+        <div className="progress-day" style={pStyle}></div>
+      </Progress>
     </div>
   );
 }
+
 const Test = withApollo(
   flowright(
     graphql(entries, {
       options: {
-        fetchPolicy: "cache-first"
+        fetchPolicy: "network-only"
       },
       props: ({ data: { listEntries = { items: [] } } }) => ({
-        entries: listEntries
+        data: listEntries
       })
     }),
     graphql(createEntry, {
       options: {
-        update: (proxy, { data: { createEntry } }) => {
-          //proxy.writeQuery({ query, data });
-        }
+        update: (proxy, { data: { createEntry } }) => {}
       },
       props: props => ({
         createEntry: entry => {
