@@ -1,1 +1,9 @@
-{}
+{
+	"auth": {
+		"totalcalorietrackere511c074": {
+			"service": "Cognito",
+			"providerPlugin": "awscloudformation",
+			"dependsOn": []
+		}
+	}
+}

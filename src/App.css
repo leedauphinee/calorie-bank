@@ -2,9 +2,6 @@
   margin-top: 100px;
   text-align: center;
 }
-#root .button {
-  margin-left: 11px;
-}
 
 .progress-day {
   display: block;
@@ -19,4 +16,29 @@
 
 #root .progress .label {
   position: initial;
+}
+
+#root .card {
+  margin: 0 auto;
+  width: 366px;
+  margin-bottom: 15px;
+}
+
+#root .ui.button {
+  min-height: 4em;
+  border-top: 0.4px solid;
+  border-bottom: 0.4px solid;
+}
+
+#root .ui.label {
+  margin-bottom: 5px;
+}
+
+#root .ui.ribbon {
+  position: absolute;
+  left: -15px;
+}
+
+#root .errorMessage {
+  color: red;
 }

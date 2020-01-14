@@ -10,10 +10,11 @@ export const singleEntry = `query SingleEntry($id: ID!) {
 
 export const entries = gql(`
 query {
-  listEntries(limit: 1000) {
+  listEntry2S(limit: 1000) {
     items {
       id
       difference
+      userId
       publishedAt
     }
   }
@@ -27,15 +28,16 @@ export const getEntry = `query GetEntry($id: ID!) {
   }
 }
 `;
-export const listEntries = `query ListEntries(
-  $filter: TableEntryFilterInput
+export const listEntries = `query ListEntry2S(
+  $filter: TableEntry2FilterInput
   $limit: Int
   $nextToken: String
 ) {
-  listEntries(filter: $filter, limit: $limit, nextToken: $nextToken) {
+  listEntry2S(filter: $filter, limit: $limit, nextToken: $nextToken) {
     items {
       id
       difference
+      userId
       publishedAt
     }
     nextToken

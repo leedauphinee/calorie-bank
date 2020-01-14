@@ -10,6 +10,11 @@
             "StackName": "amplify-totalcalorietracker-dev-191045",
             "StackId": "arn:aws:cloudformation:us-east-1:502354705180:stack/amplify-totalcalorietracker-dev-191045/f89f9120-1a0f-11ea-a619-0a36a8f29061",
             "AmplifyAppId": "d1dldjm6cp46ec"
+        },
+        "categories": {
+            "auth": {
+                "totalcalorietrackere511c074": {}
+            }
         }
     }
 }

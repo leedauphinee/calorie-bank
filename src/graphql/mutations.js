@@ -12,9 +12,10 @@ export const putEntry = `mutation PutEntry($id: ID!, $difference: String!) {
 
 export const createEntry = gql(`
 mutation ($difference: Int!, $publishedAt: AWSDateTime!) {
-  createEntry(input: {difference: $difference, publishedAt: $publishedAt}) {
+  createEntry2(input: {difference: $difference, userId: "test", publishedAt: $publishedAt}) {
       id
       difference
+      userId
       publishedAt
     }
 }`);
