@@ -2,8 +2,8 @@
 
 ## Author
 
-By Lee Dauphinee
-Senior Software Developer
+By Lee Dauphinee //
+Senior Software Developer // Halifax NS
 
 ## Description
 
